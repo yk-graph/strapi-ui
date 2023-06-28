@@ -5,7 +5,6 @@ export async function fetcher(url: string, options?: {}) {
     response = await fetch(url);
   } else {
     response = await fetch(url, options);
-    console.log("response", response);
   }
 
   const data = await response.json();
