@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FilmResponse } from "@/types/filmResponse";
+import { FilmResponse } from "@/types/films";
 import { FC } from "react";
 
 interface Props {

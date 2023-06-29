@@ -1,7 +1,7 @@
 import Films from "@/components/Films";
 import Layout from "@/components/Layout";
 import { fetcher } from "@/lib/api";
-import { FilmResponse } from "@/types/filmResponse";
+import { FilmResponse } from "@/types/films";
 import { FC, useState } from "react";
 import useSWR from "swr";
 
