@@ -1,7 +1,7 @@
 import { FC } from "react";
 
 import Layout from "@/components/Layout";
-import { fetcher } from "@/lib/api";
+import { fetcher } from "@/lib/useFetch";
 import { FilmData } from "@/types/films";
 
 type PageProps = {

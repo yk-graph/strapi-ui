@@ -1,12 +1,38 @@
-import { FC, useState } from "react";
-import Link from "next/link";
+import { ChangeEvent, FC, FormEvent, useState } from "react";
+import { useAuth, useFetch } from "@/lib";
+import { AuthUser } from "@/types/auth";
 import Image from "next/image";
+import Link from "next/link";
 
 const Nav: FC = () => {
-  const [data, setData] = useState({
-    identifier: "",
-    password: "",
-  });
+  const { setToken, unsetToken } = useAuth();
+  const { fetcher } = useFetch();
+
+  const [data, setData] = useState({});
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setData({ ...data, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const responseData: AuthUser = await fetcher(
+      `${process.env.NEXT_PUBLIC_STRAPI_URL}/auth/local`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
+    setToken(responseData);
+  };
+
+  const logout = () => {
+    unsetToken();
+  };
 
   return (
     <nav
@@ -62,18 +88,85 @@ const Nav: FC = () => {
               md:pt-0 space-x-2"
         >
           <li>
-            <Link href="/" className="md:p-2 py-2 block hover:text-blue-700">
+            <Link href="/" className="md:p-2 py-2 block hover:text-purple-400">
               Home
             </Link>
           </li>
           <li>
             <Link
               href="/films"
-              className="md:p-2 py-2 block hover:text-blue-700"
+              className="md:p-2 py-2 block hover:text-purple-400"
             >
               Films
             </Link>
           </li>
+          {/* {!loading &&
+            (user ? (
+              <li>
+                <Link href="/profile">
+                  <a className="md:p-2 py-2 block hover:text-purple-400">
+                    Profile
+                  </a>
+                </Link>
+              </li>
+            ) : (
+              ""
+            ))}
+          {!loading &&
+            (user ? (
+              <li>
+                <a
+                  className="md:p-2 py-2 block hover:text-purple-400"
+                  onClick={logout}
+                  style={{ cursor: "pointer" }}
+                >
+                  Logout
+                </a>
+              </li>
+            ) : (
+              ""
+            ))}
+          {!loading && !user ? ( */}
+          <>
+            <li>
+              <form onSubmit={handleSubmit} className="form-inline">
+                <input
+                  type="text"
+                  name="identifier"
+                  onChange={handleChange}
+                  placeholder="Username"
+                  className="md:p-2 form-input py-2 rounded mx-2"
+                  required
+                />
+                <input
+                  type="password"
+                  name="password"
+                  onChange={handleChange}
+                  placeholder="Password"
+                  className="md:p-2 form-input py-2 rounded mx-2"
+                  required
+                />
+
+                <button
+                  className="md:p-2 rounded py-2 text-black bg-purple-200 p-2"
+                  type="submit"
+                >
+                  Login
+                </button>
+              </form>
+            </li>
+            <li>
+              <Link
+                href="/register"
+                className="md:p-2 block py-2 hover:text-purple-400 text-black"
+              >
+                Register
+              </Link>
+            </li>
+          </>
+          {/* ) : (
+            ""
+          )} */}
         </ul>
       </div>
     </nav>
