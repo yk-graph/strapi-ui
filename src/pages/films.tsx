@@ -1,15 +1,18 @@
-import Films from "@/components/Films";
-import Layout from "@/components/Layout";
-import { fetcher } from "@/lib/useFetch";
-import { FilmResponse } from "@/types/films";
 import { FC, useState } from "react";
 import useSWR from "swr";
+
+import Films from "@/components/Films";
+import Layout from "@/components/Layout";
+import fetcher from "@/libs/useFetch";
+import { useFetchUser } from "@/providers/AuthProvider";
+import { FilmResponse } from "@/types/films";
 
 interface Props {
   films: FilmResponse;
 }
 
 const FilmsList: FC<Props> = ({ films }) => {
+  const { user, loading } = useFetchUser();
   const [pageIndex, setPageIndex] = useState(1);
 
   // useSWRを使って第一引数に指定している値(このケースだとpageIndexの値)に変化が合った場合に再度fetcher関数を実行する
@@ -26,7 +29,7 @@ const FilmsList: FC<Props> = ({ films }) => {
   );
 
   return (
-    <Layout>
+    <Layout user={user} loading={loading}>
       <h1 className="text-5xl md:text-6xl font-extrabold leading-tighter mb-4">
         <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-teal-400 py-2">
           Films

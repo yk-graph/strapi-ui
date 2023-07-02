@@ -1,8 +1,9 @@
 import { FC } from "react";
 
 import Layout from "@/components/Layout";
-import { fetcher } from "@/lib/useFetch";
+import fetcher from "@/libs/useFetch";
 import { FilmData } from "@/types/films";
+import { useFetchUser } from "@/providers/AuthProvider";
 
 type PageProps = {
   params: {
@@ -14,8 +15,9 @@ type Props = {
 };
 
 const Film: FC<Props> = ({ film }) => {
+  const { user, loading } = useFetchUser();
   return (
-    <Layout>
+    <Layout user={user} loading={loading}>
       <h1 className="text-5xl md:text-6xl font-extrabold leading-tighter mb-4">
         <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-teal-400 py-2">
           {film.attributes.title}

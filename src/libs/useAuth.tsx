@@ -14,6 +14,8 @@ const useAuth = () => {
     Cookies.set("jwt", data.jwt);
 
     if (Cookies.get("username")) {
+      console.log("reload!!! in useAuth.tsx");
+
       Router.reload();
     }
   };

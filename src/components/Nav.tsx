@@ -1,13 +1,15 @@
 import { ChangeEvent, FC, FormEvent, useState } from "react";
-import { useAuth, useFetch } from "@/lib";
-import { AuthUser } from "@/types/auth";
 import Image from "next/image";
 import Link from "next/link";
 
+import useAuth from "@/libs/useAuth";
+import fetcher from "@/libs/useFetch";
+import { useAuthContext } from "@/providers/AuthProvider";
+import { AuthUser } from "@/types/auth";
+
 const Nav: FC = () => {
   const { setToken, unsetToken } = useAuth();
-  const { fetcher } = useFetch();
-
+  const { user, loading } = useAuthContext();
   const [data, setData] = useState({});
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -100,13 +102,14 @@ const Nav: FC = () => {
               Films
             </Link>
           </li>
-          {/* {!loading &&
+          {!loading &&
             (user ? (
               <li>
-                <Link href="/profile">
-                  <a className="md:p-2 py-2 block hover:text-purple-400">
-                    Profile
-                  </a>
+                <Link
+                  href="/profile"
+                  className="md:p-2 py-2 block hover:text-purple-400"
+                >
+                  Profile
                 </Link>
               </li>
             ) : (
@@ -126,47 +129,47 @@ const Nav: FC = () => {
             ) : (
               ""
             ))}
-          {!loading && !user ? ( */}
-          <>
-            <li>
-              <form onSubmit={handleSubmit} className="form-inline">
-                <input
-                  type="text"
-                  name="identifier"
-                  onChange={handleChange}
-                  placeholder="Username"
-                  className="md:p-2 form-input py-2 rounded mx-2"
-                  required
-                />
-                <input
-                  type="password"
-                  name="password"
-                  onChange={handleChange}
-                  placeholder="Password"
-                  className="md:p-2 form-input py-2 rounded mx-2"
-                  required
-                />
+          {!loading && !user ? (
+            <>
+              <li>
+                <form onSubmit={handleSubmit} className="form-inline">
+                  <input
+                    type="text"
+                    name="identifier"
+                    onChange={handleChange}
+                    placeholder="Username"
+                    className="md:p-2 form-input py-2 rounded mx-2"
+                    required
+                  />
+                  <input
+                    type="password"
+                    name="password"
+                    onChange={handleChange}
+                    placeholder="Password"
+                    className="md:p-2 form-input py-2 rounded mx-2"
+                    required
+                  />
 
-                <button
-                  className="md:p-2 rounded py-2 text-black bg-purple-200 p-2"
-                  type="submit"
+                  <button
+                    className="md:p-2 rounded py-2 text-black bg-purple-200 p-2"
+                    type="submit"
+                  >
+                    Login
+                  </button>
+                </form>
+              </li>
+              <li>
+                <Link
+                  href="/register"
+                  className="md:p-2 block py-2 hover:text-purple-400 text-black"
                 >
-                  Login
-                </button>
-              </form>
-            </li>
-            <li>
-              <Link
-                href="/register"
-                className="md:p-2 block py-2 hover:text-purple-400 text-black"
-              >
-                Register
-              </Link>
-            </li>
-          </>
-          {/* ) : (
+                  Register
+                </Link>
+              </li>
+            </>
+          ) : (
             ""
-          )} */}
+          )}
         </ul>
       </div>
     </nav>

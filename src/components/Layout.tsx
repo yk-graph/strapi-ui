@@ -1,13 +1,16 @@
 import { FC, ReactNode } from "react";
 import Head from "next/head";
 import Nav from "./Nav";
+import { AuthProvider } from "@/providers/AuthProvider";
 
 interface Props {
+  user: string | undefined;
+  loading: boolean;
   children: ReactNode;
 }
 
-const Layout: FC<Props> = ({ children }) => (
-  <>
+const Layout: FC<Props> = ({ user, loading, children }) => (
+  <AuthProvider value={{ user, loading }}>
     <Head>
       <title>Film Database</title>
     </Head>
@@ -30,7 +33,7 @@ const Layout: FC<Props> = ({ children }) => (
         <div className="text-2xl font-medium">{children}</div>
       </div>
     </main>
-  </>
+  </AuthProvider>
 );
 
 export default Layout;
