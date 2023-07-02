@@ -9,6 +9,7 @@ import {
   getUserFromLocalCookie,
 } from "@/libs/auth";
 import { fetcher } from "@/libs/fetcher";
+import { markdownToHtml } from "@/libs/markdownToHtml";
 import { useFetchUser } from "@/providers/AuthProvider";
 import { FilmData } from "@/types/films";
 import { useRouter } from "next/router";
@@ -19,10 +20,11 @@ interface Params extends ParsedUrlQuery {
 }
 type Props = {
   film: FilmData;
-  jwt: string | undefined;
+  plot: string;
+  jwt: string | null;
 };
 
-const Film: FC<Props> = ({ film, jwt }) => {
+const Film: FC<Props> = ({ film, plot, jwt }) => {
   const router = useRouter();
   const { user, loading } = useFetchUser();
   const [review, setReview] = useState({ value: "" });
@@ -71,10 +73,10 @@ const Film: FC<Props> = ({ film, jwt }) => {
           Plot
         </span>
       </h2>
-      {/* <div
+      <div
         className="tracking-wide font-normal text-sm"
         dangerouslySetInnerHTML={{ __html: plot }}
-      ></div> */}
+      ></div>
       {user && (
         <>
           <h2 className="text-3xl md:text-4xl font-extrabold leading-tighter mb-4 mt-4">
@@ -98,9 +100,7 @@ const Film: FC<Props> = ({ film, jwt }) => {
             </form>
           </h2>
           <ul>
-            {film.attributes.reviews?.data.length === 0 && (
-              <span>No reviews yet</span>
-            )}
+            {film.attributes.reviews && <span>No reviews yet</span>}
             {film.attributes.reviews &&
               film.attributes.reviews.data.map((review) => {
                 return (
@@ -131,6 +131,7 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
     typeof window !== "undefined"
       ? getTokenFromLocalCookie()
       : getTokenFromServerCookie(req);
+
   const filmResponse = await fetcher(
     `${process.env.NEXT_PUBLIC_STRAPI_URL}/slugify/slugs/film/${slug}?populate=*`,
     jwt
@@ -142,10 +143,13 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
       : undefined
   );
 
+  const plot = await markdownToHtml(filmResponse.data.attributes.plot);
+
   return {
     props: {
       film: filmResponse.data,
-      jwt: jwt || undefined,
+      plot,
+      jwt: jwt || null,
     },
   };
 };
