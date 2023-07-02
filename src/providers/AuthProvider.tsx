@@ -6,7 +6,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import useAuth from "@/libs/useAuth";
+import { getUserFromLocalCookie } from "@/libs/auth";
 
 interface AuthContextProps {
   user: string | undefined;
@@ -42,9 +42,6 @@ export const useAuthContext = () => useContext(AuthContext);
 
 // useFetchUser関数が呼ばれたらブラウザのCookieの中のユーザー情報を取得してuser情報とloading情報を返す
 export const useFetchUser = () => {
-  // ブラウザのCookieの中のユーザー情報を取得する関数
-  const { getUserFromLocalCookie } = useAuth();
-
   const [data, setUser] = useState<AuthContextProps>({
     user: userState || undefined,
     loading: userState === undefined, // userStateがundefinedの場合はローディング中として扱う

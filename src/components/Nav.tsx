@@ -2,13 +2,12 @@ import { ChangeEvent, FC, FormEvent, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import useAuth from "@/libs/useAuth";
-import fetcher from "@/libs/useFetch";
+import { setToken, unsetToken } from "@/libs/auth";
+import { fetcher } from "@/libs/fetcher";
 import { useAuthContext } from "@/providers/AuthProvider";
 import { AuthUser } from "@/types/auth";
 
 const Nav: FC = () => {
-  const { setToken, unsetToken } = useAuth();
   const { user, loading } = useAuthContext();
   const [data, setData] = useState({});
 

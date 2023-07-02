@@ -1,4 +1,4 @@
-const fetcher = async (url: string, options?: {}) => {
+export const fetcher = async (url: string, options?: {}) => {
   let response;
 
   if (!options) {
@@ -10,5 +10,3 @@ const fetcher = async (url: string, options?: {}) => {
   const data = await response.json();
   return data;
 };
-
-export default fetcher;

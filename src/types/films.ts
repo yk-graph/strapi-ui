@@ -1,3 +1,5 @@
+import { ReviewData } from "./reviews";
+
 export type FilmData = {
   id: number;
   attributes: {
@@ -9,6 +11,9 @@ export type FilmData = {
     createdAt: Date;
     updatedAt: Date;
     publishedAt: Date;
+    reviews?: {
+      data: ReviewData[];
+    };
   };
 };
 

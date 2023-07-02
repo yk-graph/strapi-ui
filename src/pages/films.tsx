@@ -3,7 +3,7 @@ import useSWR from "swr";
 
 import Films from "@/components/Films";
 import Layout from "@/components/Layout";
-import fetcher from "@/libs/useFetch";
+import { fetcher } from "@/libs/fetcher";
 import { useFetchUser } from "@/providers/AuthProvider";
 import { FilmResponse } from "@/types/films";
 
@@ -75,7 +75,7 @@ const FilmsList: FC<Props> = ({ films }) => {
 
 export default FilmsList;
 
-export async function getStaticProps() {
+export const getStaticProps = async () => {
   const filmsResponse = await fetcher(
     `${process.env.NEXT_PUBLIC_STRAPI_URL}/films?pagination[page]=1&pagination[pageSize]=5`
   );
@@ -85,4 +85,4 @@ export async function getStaticProps() {
       films: filmsResponse,
     },
   };
-}
+};
