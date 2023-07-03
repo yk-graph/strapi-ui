@@ -2,6 +2,7 @@ import Router from "next/router";
 import Cookies from "js-cookie";
 
 import { AuthUser } from "@/types/auth";
+import { fetcher } from "@/libs/fetcher";
 
 export const setToken = (data: AuthUser) => {
   // Next.jsがサーバーで実行されるウィンドウオブジェクトがページに含まれている場合 `window is not defined` ノエラーになってwindowにアクセスする事はできない
@@ -34,7 +35,19 @@ export const getIdFromLocalCookie = () => {
 };
 
 export const getUserFromLocalCookie = () => {
-  return Cookies.get("username");
+  const jwt = getTokenFromLocalCookie();
+
+  if (jwt) {
+    return fetcher(`${process.env.NEXT_PUBLIC_STRAPI_URL}/users/me`, {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    })
+      .then((data) => data.username)
+      .catch((error) => console.log(error));
+  } else {
+    return;
+  }
 };
 
 export const getTokenFromLocalCookie = () => {

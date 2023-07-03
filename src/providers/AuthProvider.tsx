@@ -48,18 +48,19 @@ export const useFetchUser = () => {
   });
 
   useEffect(() => {
-    console.log("userState!!!!", userState);
-
     // userStateに値がある場合は既にログイン済みと判定して早期Returnする
     if (userState) return;
 
     let isMounted = true;
-    const user = getUserFromLocalCookie();
-    console.log("user!!!!", user);
+    // /api/users/me にアクセスしてユーザー情報を取得する非同期関数の処理
+    const resolveUser = async () => {
+      const user = await getUserFromLocalCookie();
 
-    if (isMounted) {
-      setUser({ user, loading: false });
-    }
+      if (isMounted) {
+        setUser({ user, loading: false });
+      }
+    };
+    resolveUser();
 
     return () => {
       isMounted = false;
