@@ -22,7 +22,7 @@ type Props = {
   film?: FilmData;
   plot: string;
   jwt: string | null;
-  error?: string | undefined;
+  error?: string | null;
 };
 
 const Film: FC<Props> = ({ film, plot, jwt, error }) => {
@@ -159,7 +159,7 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
         film: filmResponse.data,
         plot,
         jwt: jwt || null,
-        error: undefined,
+        error: null,
       },
     };
   } else {
