@@ -5,6 +5,7 @@ export type UserData = {
   provider: string;
   confirmed: boolean;
   blocked: boolean;
+  avatar: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
