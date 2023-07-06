@@ -1,3 +1,5 @@
+import { NextApiRequest } from "next";
+import { IncomingMessage } from "node:http";
 import Router from "next/router";
 import Cookies from "js-cookie";
 
@@ -14,8 +16,6 @@ export const setToken = (data: AuthUser) => {
   Cookies.set("jwt", data.jwt);
 
   if (Cookies.get("username")) {
-    console.log("reload!!! in useAuth.tsx");
-
     Router.reload();
   }
 };
@@ -31,7 +31,19 @@ export const unsetToken = () => {
 };
 
 export const getIdFromLocalCookie = () => {
-  return Cookies.get("id");
+  const jwt = getTokenFromLocalCookie();
+
+  if (jwt) {
+    return fetcher(`${process.env.NEXT_PUBLIC_STRAPI_URL}/users/me`, {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    })
+      .then((data) => data.id)
+      .catch((error) => console.log(error));
+  } else {
+    return;
+  }
 };
 
 export const getUserFromLocalCookie = () => {
@@ -54,7 +66,7 @@ export const getTokenFromLocalCookie = () => {
   return Cookies.get("jwt");
 };
 
-export const getIdFromServerCookie = (req: any) => {
+export const getIdFromServerCookie = (req: NextApiRequest) => {
   if (!req.headers.cookie || "") return undefined;
 
   const idCookie = req.headers.cookie
@@ -67,7 +79,7 @@ export const getIdFromServerCookie = (req: any) => {
   return id;
 };
 
-export const getTokenFromServerCookie = (req: any) => {
+export const getTokenFromServerCookie = (req: IncomingMessage) => {
   if (!req.headers.cookie || "") return undefined;
 
   const jwtCookie = req.headers.cookie

@@ -1,38 +1,160 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Strapi _ NextJS _ TypeScript
 
-## Getting Started
+## StrapiAPI
 
-First, run the development server:
+| 内容           | METHOD | URL                                                      | BODY                                                   | RES                         | PARAMS                                                                | 認可※ |
+| :------------- | :----- | :------------------------------------------------------- | :----------------------------------------------------- | :-------------------------- | :-------------------------------------------------------------------- | :---- |
+| jwt 取得       | POST   | http://localhost:1337/api/auth/local                     | identifier: string,<br>password: string                | jwt: string<br>user: object |                                                                       |       |
+| サインアップ   | POST   | http://localhost:1337/api/local/register                 | username: string,<br>email: string<br>password: string | jwt: string<br>user: object |                                                                       |       |
+| film 一覧取得  | GET    | http://localhost:1337/api/films                          |                                                        | data: array<br>meta: object | pagination[page]=number<br>pagination[pageSize]=number<br>populate=\* |       |
+| film 取得 slug | GET    | http://localhost:1337/api/slugify/slugs/:modelName/:slug |                                                        | data: array<br>meta: object |                                                                       |       |
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+**※ 認可 : RequestHeader に jwt が必要かどうか**
+
+必要な場合 ↓
+
+```
+headers: {
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${jwt}`,
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## import したライブラリ
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+| パッケージ名      | 用途                               | URL                                               |
+| :---------------- | :--------------------------------- | :------------------------------------------------ |
+| useSWR            | ページネーションの実装             | https://swr.vercel.app/ja                         |
+| js-cookie         | Cookie の管理                      | https://github.com/js-cookie/js-cookie            |
+| @types/js-cookie  | Cookie の管理                      | npm i --save-dev @types/js-cookie                 |
+| tailwindcss/forms | CSS の form 部分を本来の UI にする | https://github.com/tailwindlabs/tailwindcss-forms |
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## Tips
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+### fetch 用の関数を切り出し管理する
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+films-ui/src/libs/fetcher.tsx
 
-## Learn More
+```
+export const fetcher = async (url: string, options?: {}) => {
+  let response;
 
-To learn more about Next.js, take a look at the following resources:
+  if (!options) {
+    response = await fetch(url);
+  } else {
+    response = await fetch(url, options);
+  }
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+  const data = await response.json();
+  return data;
+};
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### useSWR を使って URL の値が変わる度にデータを fetch するようにする
 
-## Deploy on Vercel
+films-ui/src/pages/films.tsx
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+const { data } = useSWR(
+  `${process.env.NEXT_PUBLIC_STRAPI_URL}/films?pagination[page]=${pageIndex}&pagination[pageSize]=5`, // ${pageIndex}の値が変わる度にfetchが走る
+  fetcher,
+  {
+    // fallbackData -> データ取得前に表示するデータ
+    fallbackData: films,
+  }
+);
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### slug を使えるようにするための Strapi 側の設定
+
+1. strapi 側のディレクトリで `yarn add strapi-plugin-slugify`
+2. films/config/plugins.ts を追加
+
+```
+module.exports = ({ env }) => ({
+  slugify: {
+    enabled: true,
+    config: {
+      contentTypes: {
+        film: {
+          field: "slug",
+          references: "title",
+        },
+      },
+    },
+  },
+});
+```
+
+3. strapi 再起動 `yarn develop`
+
+### サーバーサイド側の処理かどうかを判定する
+
+`typeof window` が `undefined` で だったらサーバーサイド側の処理として判定できる
+[参考](https://dev-k.hatenablog.com/entry/how-to-access-the-window-object-in-nextjs-dev-k)
+
+films-ui/src/pages/film/[slug].tsx
+
+```
+const jwt = typeof window !== "undefined" ? getTokenFromLocalCookie() : getTokenFromServerCookie(req);
+```
+
+### 【要調査】 getServerSideProps で req オブジェクトを送る
+
+サーバーサイド側の処理としてリクエストを送りたいときは下記のように指定する
+
+films-ui/src/pages/film/[slug].tsx
+
+```
+export const getServerSideProps: GetServerSideProps<Props> = async ({
+  req,
+  params,
+}) => {
+  const slug = params!.slug;
+
+  const jwt =
+    typeof window !== "undefined"
+      ? getTokenFromLocalCookie()
+      : getTokenFromServerCookie(req);
+
+  const filmResponse = await fetcher(
+    `${process.env.NEXT_PUBLIC_STRAPI_URL}/slugify/slugs/film/${slug}?populate=*`,
+    jwt
+      ? {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        }
+      : undefined
+  );
+};
+```
+
+films-ui/src/libs/auth.tsx
+
+jwt の値を取得する処理
+渡ってくる req は `IncomingMessage` って型だといいらしい
+
+```
+export const getTokenFromServerCookie = (req: IncomingMessage) => {
+  if (!req.headers.cookie || "") return undefined;
+
+  const jwtCookie = req.headers.cookie
+    .split(";")
+    .find((c: string) => c.trim().startsWith("jwt="));
+
+  if (!jwtCookie) return undefined;
+
+  const jwt = jwtCookie.split("=")[1];
+  return jwt;
+};
+```
+
+### フォーム部分の UI を tailwindcss のクセをとる方法
+
+1. tailwindcss/forms のインストール
+2. films-ui/tailwind.config.js に記述
+
+```
+plugins: [require("@tailwindcss/forms")({ strategy: "class" })],
+```

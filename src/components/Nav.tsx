@@ -17,6 +17,7 @@ const Nav: FC = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const responseData: AuthUser = await fetcher(
       `${process.env.NEXT_PUBLIC_STRAPI_URL}/auth/local`,
       {

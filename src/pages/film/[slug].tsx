@@ -1,6 +1,5 @@
-import { ChangeEvent, FC, FormEvent, useState } from "react";
 import { GetServerSideProps } from "next";
-import { ParsedUrlQuery } from "node:querystring";
+import { ChangeEvent, FC, FormEvent, useState } from "react";
 
 import Layout from "@/components/Layout";
 import {
@@ -14,14 +13,10 @@ import { useFetchUser } from "@/providers/AuthProvider";
 import { FilmData } from "@/types/films";
 import { useRouter } from "next/router";
 
-// Paramsの型を定義し、ParsedUrlQueryをextendsする
-interface Params extends ParsedUrlQuery {
-  slug: string;
-}
 type Props = {
   film?: FilmData;
   plot: string;
-  jwt: string | null;
+  jwt?: string | null;
   error?: string | null;
 };
 
@@ -45,9 +40,11 @@ const Film: FC<Props> = ({ film, plot, jwt, error }) => {
           Authorization: `Bearer ${jwt}`,
         },
         body: JSON.stringify({
-          review: review.value,
-          reviewer: getUserFromLocalCookie(),
-          Film: film!.id,
+          data: {
+            review: review.value,
+            reviewer: await getUserFromLocalCookie(),
+            Film: film!.id,
+          },
         }),
       });
       router.reload();
@@ -108,7 +105,9 @@ const Film: FC<Props> = ({ film, plot, jwt, error }) => {
               </form>
             </h2>
             <ul>
-              {film.attributes.reviews && <span>No reviews yet</span>}
+              {film.attributes.reviews?.data.length === 0 && (
+                <span>No reviews yet</span>
+              )}
               {film.attributes.reviews &&
                 film.attributes.reviews.data.map((review) => {
                   return (
@@ -130,7 +129,7 @@ const Film: FC<Props> = ({ film, plot, jwt, error }) => {
 
 export default Film;
 
-export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
+export const getServerSideProps: GetServerSideProps<Props> = async ({
   req,
   params,
 }) => {

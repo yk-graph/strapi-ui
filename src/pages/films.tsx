@@ -19,6 +19,7 @@ const FilmsList: FC<Props> = ({ films }) => {
   // 第一引数 -> APIのURL
   // 第二引数 -> fetcher関数(非同期関数)を渡す※fetcherで指定するURLは第一引数の値となる
   // 第三引数 -> オプション
+  // dataの値は 初期値はfilmsの値, fetcher関数が実行された場合はfetcher関数の返却値 になる
   const { data } = useSWR(
     `${process.env.NEXT_PUBLIC_STRAPI_URL}/films?pagination[page]=${pageIndex}&pagination[pageSize]=5`,
     fetcher,

@@ -1,24 +1,41 @@
-import { useFetchUser } from "@/providers/AuthProvider";
+import { ChangeEvent, FC, useState } from "react";
+import { NextApiRequest } from "next";
+
 import Layout from "@/components/Layout";
-import { GetServerSideProps, Redirect } from "next";
 import { getTokenFromServerCookie } from "@/libs/auth";
 import { fetcher } from "@/libs/fetcher";
+import { useFetchUser } from "@/providers/AuthProvider";
 import { UserData } from "@/types/auth";
-import { FC } from "react";
-import { NextRequest } from "next/server";
 
 interface Props {
   avatar: string | null;
 }
 type RequestType = {
-  req: NextRequest;
+  req: NextApiRequest;
 };
 
 const Profile: FC<Props> = ({ avatar }) => {
   const { user, loading } = useFetchUser();
+  const [image, setImage] = useState<File | null>(null);
 
-  const uploadToClient = () => {};
-  const uploadToServer = () => {};
+  const uploadToClient = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const tmpImage = e.target.files[0];
+      setImage(tmpImage);
+    }
+  };
+
+  const uploadToServer = async () => {
+    const formData = new FormData();
+    const file = image;
+    formData.append("inputFile", file!);
+    formData.append("user_id", "");
+
+    try {
+    } catch (error) {
+      console.log(JSON.stringify(error));
+    }
+  };
 
   return (
     <Layout user={user} loading={loading}>
